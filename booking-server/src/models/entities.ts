@@ -6,12 +6,12 @@ export const user = z.strictObject({
   password: z.string(),
 });
 
-export const events = z.strictObject({
+export const event = z.strictObject({
   id: z.int(),
   name: z.string(),
 });
 
-export const resrvations = z.strictObject({
+export const resrvation = z.strictObject({
   id: z.int(),
   eventId: z.int(),
   reserved: z.boolean(),
