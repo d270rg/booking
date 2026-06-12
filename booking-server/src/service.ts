@@ -4,6 +4,8 @@ interface Deps {
   storage: Storage;
 }
 
-export function createAppService({ storage }: Deps) {}
+export function createAppService({ storage }: Deps) {
+  return {};
+}
 
 export type AppService = ReturnType<typeof createAppService>;
