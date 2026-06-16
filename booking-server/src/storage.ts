@@ -52,8 +52,8 @@ export function createStorage({ connectionPool }: Deps) {
       const createdEvent = event.parse(result.rows[0]);
 
       await connectionPool.query(
-        `INSERT INTO reservations (eventId, status)
-         SELECT $1, $2 FROM generate_series(1, $3)`,
+        `INSERT INTO reservations (eventId, status, index)
+         SELECT $1, $2, i FROM generate_series(1, $3) AS i`,
         [createdEvent.id, ReservationStatus.Free, size],
       );
 

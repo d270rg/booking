@@ -1,5 +1,6 @@
 import { ReservationStatus } from "./models/enums";
 import { ConflictException } from "./models/errors";
+import { IApiEvents } from "./models/models";
 import { Storage } from "./storage";
 
 interface Deps {
@@ -13,7 +14,14 @@ export function createAppService({ storage }: Deps) {
     },
 
     getEventsWithReservations: async () => {
-      return storage.getEventsWithReservations();
+      const reservations = await storage.getEventsWithReservations();
+
+      const events = Object.groupBy(
+        reservations,
+        (reservation) => reservation.eventId,
+      );
+
+      return events;
     },
 
     bookReservations: async (userId: string, reservationIds: string[]) => {

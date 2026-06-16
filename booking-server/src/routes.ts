@@ -125,6 +125,7 @@ export function createRoutes(deps: Deps) {
       { onRequest: [authGuard(deps)] },
       async (_request, reply) => {
         const events = await appService.getEventsWithReservations();
+
         reply.code(200).send(events);
       },
     );

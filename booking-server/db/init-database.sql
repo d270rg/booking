@@ -12,6 +12,7 @@ CREATE TABLE IF NOT EXISTS events (
 CREATE TABLE IF NOT EXISTS reservations (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid (),
     eventId UUID NOT NULL,
+    index INT NOT NULL,
     status TEXT NOT NULL,
     reservationDate TIMESTAMP,
     reservedBy UUID,
