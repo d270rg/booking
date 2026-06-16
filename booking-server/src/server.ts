@@ -28,7 +28,7 @@ const appModule = async () => {
     }),
   );
   set(module, "storage", createStorage(module));
-  set(module, "service", createAppService(module));
+  set(module, "appService", createAppService(module));
   set(module, "authService", createAuthService(module));
   set(module, "routes", createRoutes(module));
 

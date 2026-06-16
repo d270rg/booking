@@ -1,10 +1,14 @@
 import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
-import { apiUser } from "./models/models";
+import { apiReservationIds, apiUser } from "./models/models";
 import { AuthService } from "./auth-service";
 import { request } from "node:http";
+import { AppService } from "./service";
+import { ConflictException, NotFoundException } from "./models/errors";
+import { safeParseAsync } from "zod";
 
 interface Deps {
   authService: AuthService;
+  appService: AppService;
 }
 
 const unprotectedPaths = ["/login", "/register"];
@@ -60,9 +64,18 @@ const authGuard =
   };
 
 export function createRoutes(deps: Deps) {
-  const { authService } = deps;
+  const { authService, appService } = deps;
   return async function appRouter(fastify: FastifyInstance) {
     fastify.setErrorHandler((error, _request, reply) => {
+      if (error instanceof ConflictException) {
+        reply.status(409).send({ ok: false });
+        return;
+      }
+      if (error instanceof NotFoundException) {
+        reply.status(404).send({ ok: false });
+        return;
+      }
+
       console.log("Internal error", error);
       reply.status(500).send({ ok: false });
     });
@@ -108,9 +121,48 @@ export function createRoutes(deps: Deps) {
     });
 
     fastify.get(
-      "/hello-world",
+      "/events",
       { onRequest: [authGuard(deps)] },
-      async (request, reply) => {},
+      async (_request, reply) => {
+        const events = await appService.getEventsWithReservations();
+        reply.code(200).send(events);
+      },
+    );
+
+    fastify.post(
+      "/reserve",
+      { onRequest: [authGuard(deps)] },
+      async (request, reply) => {
+        const reservationIdsRequest = apiReservationIds.safeParse(request);
+
+        if (reservationIdsRequest.error) {
+          reply.code(400).send();
+          return;
+        }
+
+        await appService.bookReservations(
+          reservationIdsRequest.data.userId,
+          reservationIdsRequest.data.reservationIds,
+        );
+      },
+    );
+
+    fastify.post(
+      "/confirm",
+      { onRequest: [authGuard(deps)] },
+      async (request, reply) => {
+        const reservationIdsRequest = apiReservationIds.safeParse(request);
+
+        if (reservationIdsRequest.error) {
+          reply.code(400).send();
+          return;
+        }
+
+        await appService.confirmReservations(
+          reservationIdsRequest.data.userId,
+          reservationIdsRequest.data.reservationIds,
+        );
+      },
     );
   };
 }
